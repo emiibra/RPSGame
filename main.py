@@ -16,7 +16,7 @@ from game import (
     update_score,
 )
 
-COUNTDOWN_SECONDS = 3
+COUNTDOWN_SECONDS = 5
 STABLE_FRAMES = 5
 
 COLOR_TEXT = (245, 248, 250)
