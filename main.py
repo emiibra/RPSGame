@@ -3,6 +3,7 @@ import sys
 import tempfile
 from collections import deque
 from math import ceil
+from math import ceil, sin
 from time import monotonic
 
 import cv2
@@ -27,6 +28,7 @@ COLOR_ACCENT = (75, 210, 255)
 COLOR_WIN = (95, 220, 135)
 COLOR_LOSE = (95, 105, 245)
 COLOR_TIE = (225, 200, 95)
+COLOR_FIRE = (40, 140, 255)
 
 MEDIAPIPE_STARTUP_LOGS = (
     "All log messages before absl::InitializeLog()",
@@ -153,7 +155,29 @@ def draw_interface(
             2,
             cv2.LINE_AA,
         )
-
+    if player_streak > 0:
+        on_fire = player_streak >= 3
+        badge_color = COLOR_FIRE if on_fire else COLOR_ACCENT
+        badge_text = f"ON FIRE x{player_streak}" if on_fire else f"STREAK x{player_streak}"
+        (text_w, text_h), _ = cv2.getTextSize(badge_text, cv2.FONT_HERSHEY_SIMPLEX, 0.8, 2)
+        left, top = 24, header_bottom + 18
+        right, bottom = left + text_w + 36, top + text_h + 28
+        cv2.rectangle(frame, (left, top), (right, bottom), COLOR_PANEL, -1)
+        border = 2
+        if on_fire:
+            pulse = (sin(monotonic() * 8) + 1) / 2
+            border = 2 + round(pulse * 4)
+        cv2.rectangle(frame, (left, top), (right, bottom), badge_color, border, cv2.LINE_AA)
+        cv2.putText(
+            frame,
+            badge_text,
+            (left + 18, bottom - 14),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.8,
+            badge_color,
+            2,
+            cv2.LINE_AA,
+        )
     message_color = COLOR_TEXT
     if "win" in round_message.lower():
         message_color = COLOR_WIN
