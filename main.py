@@ -224,6 +224,7 @@ def main():
 
     player_score = 0
     computer_score = 0
+    player_streak = 0
     gesture_samples = deque(maxlen=STABLE_FRAMES)
     stable_gesture = None
     countdown_end = None
@@ -317,6 +318,7 @@ def main():
                 frame,
                 player_score,
                 computer_score,
+                player_streak,
                 detected_gesture,
                 round_message,
                 countdown,
