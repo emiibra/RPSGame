@@ -1,5 +1,5 @@
 import random
-
+from collections import Counter, deque
 
 MOVES = ("rock", "paper", "scissors")
 RESULT_MESSAGES = {
@@ -7,6 +7,36 @@ RESULT_MESSAGES = {
     "lose": "You lose!",
     "tie": "It's a tie!",
 }
+
+# Counter-strategy mapping: what beats what
+COUNTER_MOVES = {
+    "rock": "paper",
+    "paper": "scissors",
+    "scissors": "rock",
+}
+
+
+class MoveHistory:
+    """Optional helper for experimenting with your recent moves."""
+
+    def __init__(self, max_rounds=10):
+        # Keep only the most recent moves so the history stays small.
+        self.moves = deque(maxlen=max_rounds)
+
+    def remember(self, move):
+        # Call this after a round has a valid move from you.
+        if move in MOVES:
+            self.moves.append(move)
+
+    def most_common_move(self):
+        # There is no pattern to report until a move has been recorded.
+        if not self.moves:
+            return None
+        return Counter(self.moves).most_common(1)[0][0]
+
+
+# Persistent tracker instance across rounds
+history = MoveHistory()
 
 
 def recognize_gesture(hand_landmarks):
@@ -28,12 +58,22 @@ def recognize_gesture(hand_landmarks):
 
 
 def choose_computer_move():
+    # If the player has established a pattern, play the counter to their favorite move
+    frequent_move = history.most_common_move()
+    if frequent_move:
+        return COUNTER_MOVES[frequent_move]
+
+    # Cold start: fallback to random choice when no valid history exists
     return random.choice(MOVES)
 
 
 def determine_winner(player_move, computer_move):
     if player_move not in MOVES or computer_move not in MOVES:
         raise ValueError("Moves must be rock, paper, or scissors.")
+
+    # Automatically log the valid player move to update the AI's history
+    history.remember(player_move)
+
     if player_move == computer_move:
         return "tie"
     if (player_move, computer_move) in (
